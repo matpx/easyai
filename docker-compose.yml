@@ -5,11 +5,25 @@ services:
     hostname: openwebui
     restart: unless-stopped
     environment:
-        - WEBUI_URL=https://${BASE_DOMAIN}
-        - CONTENT_EXTRACTION_ENGINE=tika
-        - TIKA_SERVER_URL=http://tika:9998/
+      - WEBUI_URL=https://${BASE_DOMAIN}
+      - CONTENT_EXTRACTION_ENGINE=tika
+      - TIKA_SERVER_URL=http://tika:9998/
+      - OLLAMA_BASE_URL=http://ollama:11434/
     volumes:
-        - openwebui:/app/backend/data
+      - openwebui:/app/backend/data
+    networks:
+      - ai_network
+    depends_on:
+      - ollama
+      - tika
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    hostname: ollama
+    restart: unless-stopped
+    volumes:
+      - ollama:/root/.ollama
     networks:
       - ai_network
 
@@ -30,16 +44,19 @@ services:
       - "80:80"
       - "443:443"
     environment:
-        - BASE_DOMAIN=${BASE_DOMAIN}
+      - BASE_DOMAIN=${BASE_DOMAIN}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:
       - ai_network
+    depends_on:
+      - openwebui
 
 volumes:
   openwebui:
+  ollama:
   caddy_data:
   caddy_config:
 
