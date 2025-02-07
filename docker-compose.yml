@@ -1,0 +1,48 @@
+services:
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:latest
+    container_name: openwebui
+    hostname: openwebui
+    restart: unless-stopped
+    environment:
+        - WEBUI_URL=https://${BASE_DOMAIN}
+        - CONTENT_EXTRACTION_ENGINE=tika
+        - TIKA_SERVER_URL=http://tika:9998/
+    volumes:
+        - openwebui:/app/backend/data
+    networks:
+      - ai_network
+
+  tika:
+    image: apache/tika:latest
+    container_name: tika
+    hostname: tika
+    restart: unless-stopped
+    networks:
+      - ai_network
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    hostname: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+        - BASE_DOMAIN=${BASE_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - ai_network
+
+volumes:
+  openwebui:
+  caddy_data:
+  caddy_config:
+
+networks:
+  ai_network:
+    driver: bridge
