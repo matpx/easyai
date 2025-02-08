@@ -5,6 +5,7 @@ services:
     hostname: openwebui
     restart: unless-stopped
     environment:
+      - WEBUI_NAME=${BASE_NAME}
       - WEBUI_URL=https://${BASE_DOMAIN}
       - CONTENT_EXTRACTION_ENGINE=tika
       - TIKA_SERVER_URL=http://tika:9998/
