@@ -31,6 +31,10 @@ services:
       - OLLAMA_BASE_URL=http://ollama:11434/
       - OPENAI_API_BASE_URLS=${OPENAI_API_BASE_URLS}
       - OPENAI_API_KEYS=${OPENAI_API_KEYS}
+      - AUDIO_STT_ENGINE=${AUDIO_STT_ENGINE}
+      - AUDIO_STT_MODEL=${AUDIO_STT_MODEL}
+      - AUDIO_STT_OPENAI_API_BASE_URL=${AUDIO_STT_OPENAI_API_BASE_URL}
+      - AUDIO_STT_OPENAI_API_KEY=${AUDIO_STT_OPENAI_API_KEY}
     volumes:
       - openwebui:/app/backend/data
     networks:
