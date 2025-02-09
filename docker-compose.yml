@@ -1,4 +1,23 @@
 services:
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    hostname: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - WEBUI_URL=${WEBUI_URL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - ai_network
+    depends_on:
+      - openwebui
+
   openwebui:
     image: ghcr.io/open-webui/open-webui:latest
     container_name: openwebui
@@ -38,30 +57,11 @@ services:
     networks:
       - ai_network
 
-  caddy:
-    image: caddy:latest
-    container_name: caddy
-    hostname: caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      - WEBUI_URL=${WEBUI_URL}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    networks:
-      - ai_network
-    depends_on:
-      - openwebui
-
 volumes:
+  caddy_config:
+  caddy_data:
   openwebui:
   ollama:
-  caddy_data:
-  caddy_config:
 
 networks:
   ai_network:
