@@ -16,7 +16,29 @@ services:
     networks:
       - ai_network
     depends_on:
-      - openwebui
+      openwebui:
+        condition: service_healthy
+      init-admin:
+        condition: service_completed_successfully
+
+  init-admin:
+    image: curlimages/curl:latest
+    container_name: init-admin
+    hostname: init-admin
+    environment:
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+    networks:
+      - ai_network
+    depends_on:
+      openwebui:
+        condition: service_healthy
+    command: >
+      sh -c '
+      curl -X POST "http://openwebui:8080/api/v1/auths/signup"
+      -H "Content-Type: application/json"
+      -d "{\"name\":\"$ADMIN_USERNAME\",\"email\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}"'
 
   openwebui:
     image: ghcr.io/open-webui/open-webui:latest
@@ -24,25 +46,21 @@ services:
     hostname: openwebui
     restart: unless-stopped
     environment:
-      - WEBUI_NAME=${WEBUI_NAME}
       - WEBUI_URL=https://${WEBUI_URL}
-      - CONTENT_EXTRACTION_ENGINE=tika
-      - TIKA_SERVER_URL=http://tika:9998/
-      - OLLAMA_BASE_URL=http://ollama:11434/
+      - WEBUI_NAME=${WEBUI_NAME}
+      - OLLAMA_BASE_URLS=http://ollama:11434/;${OLLAMA_BASE_URLS}
       - OPENAI_API_BASE_URLS=http://pipelines:9099;${OPENAI_API_BASE_URLS}
       - OPENAI_API_KEYS=0p3n-w3bu!;${OPENAI_API_KEYS}
-      - AUDIO_STT_ENGINE=${AUDIO_STT_ENGINE}
-      - AUDIO_STT_MODEL=${AUDIO_STT_MODEL}
-      - AUDIO_STT_OPENAI_API_BASE_URL=${AUDIO_STT_OPENAI_API_BASE_URL}
-      - AUDIO_STT_OPENAI_API_KEY=${AUDIO_STT_OPENAI_API_KEY}
+      - CONTENT_EXTRACTION_ENGINE=tika
+      - TIKA_SERVER_URL=http://tika:9998/
     volumes:
       - openwebui:/app/backend/data
     networks:
       - ai_network
     depends_on:
       - pipelines
-      - ollama
       - tika
+      - ollama
 
   pipelines:
     image: ghcr.io/open-webui/pipelines:latest
@@ -54,6 +72,14 @@ services:
     networks:
       - ai_network
 
+  tika:
+    image: apache/tika:latest
+    container_name: tika
+    hostname: tika
+    restart: unless-stopped
+    networks:
+      - ai_network
+
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
@@ -61,14 +87,6 @@ services:
     restart: unless-stopped
     volumes:
       - ollama:/root/.ollama
-    networks:
-      - ai_network
-
-  tika:
-    image: apache/tika:latest
-    container_name: tika
-    hostname: tika
-    restart: unless-stopped
     networks:
       - ai_network
 
