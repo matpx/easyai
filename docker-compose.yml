@@ -11,6 +11,28 @@ services:
     depends_on:
       - caddy
 
+  openssh-server:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: openssh-server
+    hostname: openssh-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - PUBLIC_KEY=${OPENSSH_PUBLIC_KEY}
+      - USER_NAME=${OPENSSH_USERNAME}
+      - SUDO_ACCESS=false
+      - PASSWORD_ACCESS=false
+      - LOG_STDOUT=
+    volumes:
+      - openssh_config:/config
+    ports:
+      - 2222:2222
+    restart: unless-stopped
+    networks:
+      - ai_network
+    profiles: [ssh]
+
   caddy:
     image: caddy:latest
     container_name: caddy
@@ -103,6 +125,7 @@ services:
       - ai_network
 
 volumes:
+  openssh_config:
   caddy_config:
   caddy_data:
   openwebui:
