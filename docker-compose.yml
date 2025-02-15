@@ -1,4 +1,10 @@
 services:
+
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
   caddy:
     image: caddy:latest
     container_name: caddy
