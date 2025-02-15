@@ -72,7 +72,6 @@ services:
     depends_on:
       - pipelines
       - tika
-      - ollama
 
   pipelines:
     image: ghcr.io/open-webui/pipelines:latest
@@ -101,6 +100,8 @@ services:
       - ollama:/root/.ollama
     networks:
       - ai_network
+    profiles:
+      - ollama
 
 volumes:
   caddy_config:
